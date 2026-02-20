@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Send, MessageSquare } from "lucide-react";
+import { Send, MessageSquare, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ChatMessage {
@@ -17,6 +17,7 @@ const GlobalChat = () => {
   });
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(username);
+  const [hoveredMsg, setHoveredMsg] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -40,6 +41,13 @@ const GlobalChat = () => {
           setMessages((prev) => [...prev, payload.new as ChatMessage]);
         }
       )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "chat_messages" },
+        (payload) => {
+          setMessages((prev) => prev.filter((m) => m.id !== payload.old.id));
+        }
+      )
       .subscribe();
 
     return () => {
@@ -60,6 +68,10 @@ const GlobalChat = () => {
       message: trimmed,
     });
     setInput("");
+  };
+
+  const deleteMessage = async (id: string) => {
+    await supabase.from("chat_messages").delete().eq("id", id);
   };
 
   const saveName = () => {
@@ -117,14 +129,28 @@ const GlobalChat = () => {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1.5 min-h-0">
         {messages.map((msg) => (
-          <div key={msg.id} className="flex gap-2 text-sm items-start group">
+          <div
+            key={msg.id}
+            className="flex gap-2 text-sm items-start group relative"
+            onMouseEnter={() => setHoveredMsg(msg.id)}
+            onMouseLeave={() => setHoveredMsg(null)}
+          >
             <span className="text-muted-foreground font-mono-game text-xs shrink-0 mt-0.5 opacity-60 group-hover:opacity-100 transition-opacity">
               {formatTime(msg.created_at)}
             </span>
             <span className="font-gaming text-xs shrink-0" style={{ color: nameColor(msg.username) }}>
               {msg.username}:
             </span>
-            <span className="text-foreground/90 font-mono-game text-xs break-all">{msg.message}</span>
+            <span className="text-foreground/90 font-mono-game text-xs break-all flex-1">{msg.message}</span>
+            {hoveredMsg === msg.id && (
+              <button
+                onClick={() => deleteMessage(msg.id)}
+                className="shrink-0 p-0.5 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                title="Delete message"
+              >
+                <Trash2 size={10} />
+              </button>
+            )}
           </div>
         ))}
         <div ref={bottomRef} />

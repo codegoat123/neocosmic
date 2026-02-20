@@ -13,7 +13,7 @@ interface Skin {
   downloads: number;
 }
 
-const ADMIN_PASSWORD = "ryz-admin-2024";
+const ADMIN_PASSWORD = "password";
 
 const SkinsSection = () => {
   const [skins, setSkins] = useState<Skin[]>([]);
