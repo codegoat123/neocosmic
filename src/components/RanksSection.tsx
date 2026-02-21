@@ -41,13 +41,13 @@ const ranks: Rank[] = [
     perks: ["All Gold perks", "Diamond chat badge", "Custom username color", "Early access to skins", "VIP voice channel"],
   },
   {
-    name: "NETHERITE",
+    name: "OBSIDIAN",
     icon: <Crown size={28} />,
     price: "$19.99",
     color: "text-red-400",
     borderColor: "border-red-500/40",
     glowColor: "shadow-[0_0_25px_hsl(0_80%_55%/0.4)]",
-    perks: ["All Diamond perks", "Netherite crown badge", "Admin-style chat glow", "Request custom skins", "Lifetime supporter tag"],
+    perks: ["All Diamond perks", "Obsidian crown badge", "Admin-style chat glow", "Request custom skins", "Lifetime supporter tag"],
   },
 ];
 

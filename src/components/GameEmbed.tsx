@@ -99,7 +99,7 @@ const GameEmbed = () => {
             </div>
             <div className="text-center">
               <h3 className="font-gaming text-2xl neon-text mb-2">TUFF CHICKEN</h3>
-              <p className="text-muted-foreground text-sm font-mono-game">Eaglercraft Minecraft Server</p>
+              <p className="text-muted-foreground text-sm font-mono-game">🏆 Game of the Month</p>
             </div>
             <button
               onClick={() => setLaunched(true)}
@@ -114,7 +114,7 @@ const GameEmbed = () => {
           id="game-iframe"
           src={launched ? GAME_URL : "about:blank"}
           className="w-full h-full border-0"
-          title="Tuff Chicken Eaglercraft"
+          title="Tuff Chicken - Game of the Month"
           allow="fullscreen; microphone; camera"
         />
       </div>
