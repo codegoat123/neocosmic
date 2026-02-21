@@ -3,11 +3,18 @@ import GameEmbed from "@/components/GameEmbed";
 import SkinsSection from "@/components/SkinsSection";
 import GlobalChat from "@/components/GlobalChat";
 import VoiceChat from "@/components/VoiceChat";
+import AdBanner from "@/components/AdBanner";
+import RanksSection from "@/components/RanksSection";
 
 const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
+
+      {/* Top ad banner */}
+      <div className="border-b border-border px-4 py-2 bg-card/30">
+        <AdBanner format="horizontal" className="max-w-4xl mx-auto" />
+      </div>
 
       {/* Main layout */}
       <main className="flex-1 flex flex-col">
@@ -25,8 +32,20 @@ const Index = () => {
               <div className="flex-1 min-h-0" style={{ minHeight: "320px" }}>
                 <GlobalChat />
               </div>
+              {/* Sidebar ad */}
+              <AdBanner format="rectangle" />
             </div>
           </div>
+        </div>
+
+        {/* Ranks section */}
+        <div className="border-t border-border p-6 bg-background/50">
+          <RanksSection />
+        </div>
+
+        {/* Mid-page ad */}
+        <div className="border-t border-border px-6 py-3 bg-card/20">
+          <AdBanner format="horizontal" className="max-w-3xl mx-auto" />
         </div>
 
         {/* Skins section below */}
