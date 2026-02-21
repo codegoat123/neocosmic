@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import GameEmbed from "@/components/GameEmbed";
+import GamesSection from "@/components/GamesSection";
 import SkinsSection from "@/components/SkinsSection";
 import GlobalChat from "@/components/GlobalChat";
 import VoiceChat from "@/components/VoiceChat";
@@ -43,6 +44,11 @@ const Index = () => {
           <RanksSection />
         </div>
 
+        {/* All Games section */}
+        <div className="border-t border-border p-6 bg-background/50">
+          <GamesSection />
+        </div>
+
         {/* Mid-page ad */}
         <div className="border-t border-border px-6 py-3 bg-card/20">
           <AdBanner format="horizontal" className="max-w-3xl mx-auto" />
@@ -57,7 +63,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="border-t border-border py-3 px-6 text-center">
         <p className="text-xs font-mono-game text-muted-foreground">
-          RYZ EAGLERCRAFT · <span className="text-primary">tuffchicken.netlify.app</span> · NOT AFFILIATED WITH MOJANG
+          NOVION GAMING · <span className="text-primary">novion.lovable.app</span> · PLAY GAMES FOR FREE
         </p>
       </footer>
     </div>

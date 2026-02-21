@@ -9,20 +9,21 @@ const Header = () => {
           <div className="w-12 h-12 overflow-hidden rounded">
             <img
               src={logoImg}
-              alt="RYZ Gaming"
+              alt="Novion Gaming"
               className="w-20 h-20 object-cover object-top -mt-1 -ml-4 scale-110"
               style={{ objectPosition: "50% 30%" }}
             />
           </div>
           <div>
-            <h1 className="font-gaming text-xl neon-text tracking-widest">RYZ</h1>
-            <p className="text-xs text-muted-foreground font-mono-game tracking-wider">EAGLERCRAFT</p>
+            <h1 className="font-gaming text-xl neon-text tracking-widest">NOVION</h1>
+            <p className="text-xs text-muted-foreground font-mono-game tracking-wider">GAME PORTAL</p>
           </div>
         </div>
 
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-6 font-gaming text-sm">
           <a href="#play" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">PLAY</a>
+          <a href="#games" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">GAMES</a>
           <a href="#ranks" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">RANKS</a>
           <a href="#skins" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">SKINS</a>
           <a href="#chat" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">CHAT</a>
