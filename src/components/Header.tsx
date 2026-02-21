@@ -23,6 +23,7 @@ const Header = () => {
         {/* Nav */}
         <nav className="hidden md:flex items-center gap-6 font-gaming text-sm">
           <a href="#play" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">PLAY</a>
+          <a href="#ranks" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">RANKS</a>
           <a href="#skins" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">SKINS</a>
           <a href="#chat" className="text-muted-foreground hover:text-primary transition-colors hover:neon-text">CHAT</a>
         </nav>
