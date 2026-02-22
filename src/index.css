@@ -45,13 +45,54 @@
     --sidebar-border: 188 60% 18%;
     --sidebar-ring: 188 100% 50%;
 
-    /* Custom gaming tokens */
     --cyan: 188 100% 50%;
     --cyan-glow: 0 0 20px hsl(188 100% 50% / 0.6), 0 0 40px hsl(188 100% 50% / 0.3);
     --cyan-border-glow: 0 0 8px hsl(188 100% 50% / 0.8);
     --dark-surface: 220 20% 9%;
     --darker-surface: 220 20% 6%;
     --neon-cyan: hsl(188, 100%, 50%);
+  }
+
+  /* Light blue "Poki-like" theme */
+  .light {
+    --background: 210 40% 96%;
+    --foreground: 215 25% 15%;
+
+    --card: 210 40% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 210 40% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 200 85% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 30% 90%;
+    --secondary-foreground: 215 25% 25%;
+
+    --muted: 210 30% 92%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 200 85% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 25% 85%;
+    --input: 210 30% 92%;
+    --ring: 200 85% 50%;
+
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 215 25% 15%;
+    --sidebar-primary: 200 85% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 30% 92%;
+    --sidebar-accent-foreground: 215 25% 25%;
+    --sidebar-border: 210 25% 85%;
+    --sidebar-ring: 200 85% 50%;
+
+    --cyan: 200 85% 50%;
   }
 }
 
@@ -64,10 +105,20 @@
     @apply bg-background text-foreground;
     font-family: 'Rajdhani', sans-serif;
     font-weight: 500;
+    min-height: 100vh;
+  }
+
+  :root body {
     background-image: 
       radial-gradient(ellipse at top, hsl(188 100% 50% / 0.04) 0%, transparent 60%),
       linear-gradient(180deg, hsl(220 20% 4%) 0%, hsl(220 20% 6%) 100%);
-    min-height: 100vh;
+  }
+
+  .light body,
+  body.light-active {
+    background-image: 
+      radial-gradient(ellipse at top, hsl(200 85% 50% / 0.06) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(210 40% 97%) 0%, hsl(210 40% 94%) 100%);
   }
 
   h1, h2, h3 {
@@ -82,15 +133,27 @@
     text-shadow: 0 0 10px hsl(var(--primary) / 0.8), 0 0 20px hsl(var(--primary) / 0.4);
   }
 
+  .light .neon-text {
+    text-shadow: none;
+  }
+
   .neon-border {
     border-color: hsl(var(--primary));
     box-shadow: 0 0 8px hsl(var(--primary) / 0.6), inset 0 0 8px hsl(var(--primary) / 0.1);
+  }
+
+  .light .neon-border {
+    box-shadow: 0 2px 8px hsl(var(--primary) / 0.15);
   }
 
   .neon-card {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
     box-shadow: 0 0 20px hsl(var(--primary) / 0.05);
+  }
+
+  .light .neon-card {
+    box-shadow: 0 2px 12px hsl(var(--primary) / 0.08);
   }
 
   .scanline::after {
@@ -105,6 +168,10 @@
       hsl(188 100% 50% / 0.015) 4px
     );
     pointer-events: none;
+  }
+
+  .light .scanline::after {
+    display: none;
   }
 
   .font-gaming {
