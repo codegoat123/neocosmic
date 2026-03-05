@@ -15,14 +15,12 @@ interface HeaderProps {
 const tabs = [
   { id: "home", label: "HOME" },
   { id: "games", label: "GAMES" },
-  { id: "chat", label: "CHAT" },
-  { id: "voice", label: "VOICE" },
-  { id: "movies", label: "MOVIES" },
+  { id: "ai", label: "AI CHAT" },
   { id: "websites", label: "WEBSITES" },
   { id: "tools", label: "TOOLS" },
   { id: "skins", label: "SKINS" },
   { id: "ranks", label: "RANKS" },
-  { id: "activity", label: "ACTIVITY" },
+  { id: "activity", label: "LOG" },
 ];
 
 const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, lightMode, onToggleTheme }: HeaderProps) => {
@@ -42,28 +40,26 @@ const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, 
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between gap-3">
-        {/* Logo */}
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="w-9 h-9 overflow-hidden rounded">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 shrink-0 cursor-pointer" onClick={() => onTabChange("home")}>
+          <div className="w-9 h-9 overflow-hidden rounded-lg">
             <img src={logoImg} alt="NeoCosmic" className="w-16 h-16 object-cover object-top -mt-1 -ml-3 scale-110" style={{ objectPosition: "50% 30%" }} />
           </div>
           <div>
             <h1 className="font-gaming text-sm neon-text tracking-widest">NEOCOSMIC</h1>
-            <p className="text-[10px] text-muted-foreground font-mono-game tracking-wider">PORTAL</p>
+            <p className="text-[9px] text-muted-foreground font-mono-game tracking-wider">ENTERTAINMENT PORTAL</p>
           </div>
         </div>
 
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center gap-1 font-gaming text-[11px] flex-wrap">
+        <nav className="hidden lg:flex items-center gap-0.5 font-gaming text-[11px]">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`px-3 py-1.5 rounded-md transition-all ${
+              className={`px-3 py-1.5 rounded-lg transition-all ${
                 activeTab === tab.id
-                  ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.3)]"
+                  ? "bg-primary text-primary-foreground shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               }`}
             >
@@ -72,22 +68,19 @@ const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, 
           ))}
         </nav>
 
-        {/* Controls */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Theme toggle */}
           <button
             onClick={onToggleTheme}
-            className="p-2 rounded-md border border-border hover:border-primary transition-all"
+            className="p-2 rounded-lg border border-border hover:border-primary transition-all"
             title={lightMode ? "Switch to dark" : "Switch to light blue"}
           >
             {lightMode ? <Moon size={14} className="text-foreground" /> : <Sun size={14} className="text-primary" />}
           </button>
 
-          {/* Admin */}
           {isAdmin ? (
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] font-gaming text-primary">ADMIN</span>
-              <button onClick={onAdminLogout} className="p-1 text-muted-foreground hover:text-destructive"><LogOut size={12} /></button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-gaming text-primary px-2 py-1 bg-primary/10 rounded-lg border border-primary/20">ADMIN</span>
+              <button onClick={onAdminLogout} className="p-1.5 text-muted-foreground hover:text-destructive"><LogOut size={12} /></button>
             </div>
           ) : (
             <>
@@ -95,7 +88,7 @@ const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, 
                 <div className="flex items-center gap-1">
                   <input
                     type="password"
-                    className="w-20 px-2 py-1 text-xs bg-input border border-border rounded font-mono-game focus:outline-none focus:border-primary"
+                    className="w-20 px-2 py-1 text-xs bg-input border border-border rounded-lg font-mono-game focus:outline-none focus:border-primary"
                     placeholder="Password"
                     value={adminPass}
                     onChange={(e) => { setAdminPass(e.target.value); setPassError(false); }}
@@ -107,29 +100,27 @@ const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, 
                   {passError && <span className="text-[10px] text-destructive">✗</span>}
                 </div>
               ) : (
-                <button onClick={() => setShowAdminInput(true)} className="p-2 rounded-md border border-border hover:border-primary transition-all" title="Admin login">
+                <button onClick={() => setShowAdminInput(true)} className="p-2 rounded-lg border border-border hover:border-primary transition-all" title="Admin login">
                   <Shield size={14} className="text-muted-foreground" />
                 </button>
               )}
             </>
           )}
 
-          {/* Mobile menu */}
           <button className="lg:hidden p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile nav */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-card/95 backdrop-blur-md p-3">
-          <div className="grid grid-cols-3 gap-2 font-gaming text-[10px]">
+        <div className="lg:hidden border-t border-border bg-card/95 backdrop-blur-xl p-3">
+          <div className="grid grid-cols-4 gap-2 font-gaming text-[10px]">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => { onTabChange(tab.id); setMobileMenuOpen(false); }}
-                className={`px-2 py-2 rounded transition-all ${
+                className={`px-2 py-2.5 rounded-lg transition-all ${
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground bg-secondary/30 hover:bg-secondary/50"

@@ -35,6 +35,33 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_games: {
+        Row: {
+          created_at: string
+          description: string | null
+          embed_url: string
+          id: string
+          image_url: string | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          embed_url: string
+          id?: string
+          image_url?: string | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          embed_url?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
