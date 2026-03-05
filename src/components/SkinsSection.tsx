@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Download, Plus, X, Upload, Shirt } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import sweaterSkin from "@/assets/skin-sweater.png";
@@ -21,24 +21,16 @@ const SkinsSection = () => {
   const [adminAuthed, setAdminAuthed] = useState(false);
   const [adminPass, setAdminPass] = useState("");
   const [passError, setPassError] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    image_url: "",
-    download_url: "",
-    category: "default",
-  });
+  const [form, setForm] = useState({ name: "", description: "", category: "default" });
   const [adding, setAdding] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadQueue, setUploadQueue] = useState<{ file: File; previewUrl: string }[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchSkins();
-    // Subscribe for realtime skin additions
     const channel = supabase
       .channel("skins")
-      .on("postgres_changes", { event: "*", schema: "public", table: "skins" }, () => {
-        fetchSkins();
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "skins" }, () => fetchSkins())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, []);
@@ -57,45 +49,58 @@ const SkinsSection = () => {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `skins/${Date.now()}.${ext}`;
-    const { data, error } = await supabase.storage.from("skins").upload(path, file, { upsert: true });
-    if (data) {
-      const { data: urlData } = supabase.storage.from("skins").getPublicUrl(path);
-      setForm((f) => ({ ...f, image_url: urlData.publicUrl, download_url: urlData.publicUrl }));
-    }
-    setUploading(false);
+  const handleFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newItems = files.map(file => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setUploadQueue(prev => [...prev, ...newItems]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const addSkin = async () => {
-    if (!form.name || !form.image_url) return;
-    setAdding(true);
-    await supabase.from("skins").insert({
-      name: form.name,
-      description: form.description || null,
-      image_url: form.image_url,
-      download_url: form.download_url || form.image_url,
-      category: form.category,
+  const removeFromQueue = (idx: number) => {
+    setUploadQueue(prev => {
+      URL.revokeObjectURL(prev[idx].previewUrl);
+      return prev.filter((_, i) => i !== idx);
     });
-    setForm({ name: "", description: "", image_url: "", download_url: "", category: "default" });
+  };
+
+  const addSkins = async () => {
+    if (uploadQueue.length === 0) return;
+    setAdding(true);
+
+    for (const item of uploadQueue) {
+      const ext = item.file.name.split(".").pop();
+      const path = `skins/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data } = await supabase.storage.from("skins").upload(path, item.file, { upsert: true });
+      if (data) {
+        const { data: urlData } = supabase.storage.from("skins").getPublicUrl(path);
+        const skinName = form.name || item.file.name.replace(/\.[^/.]+$/, "");
+        await supabase.from("skins").insert({
+          name: skinName,
+          description: form.description || null,
+          image_url: urlData.publicUrl,
+          download_url: urlData.publicUrl,
+          category: form.category,
+        });
+      }
+      URL.revokeObjectURL(item.previewUrl);
+    }
+
+    setUploadQueue([]);
+    setForm({ name: "", description: "", category: "default" });
     setAdding(false);
   };
 
   const downloadSkin = async (skin: Skin) => {
-    // Increment downloads
     await supabase.from("skins").update({ downloads: skin.downloads + 1 }).eq("id", skin.id);
-    // Trigger download
     const a = document.createElement("a");
     a.href = skin.download_url;
     a.download = `${skin.name}.png`;
     a.click();
   };
 
-  // Default skins to show if DB is empty
   const displaySkins: Skin[] = skins.length > 0 ? skins : [
     {
       id: "default-1",
@@ -109,26 +114,23 @@ const SkinsSection = () => {
   ];
 
   return (
-    <section id="skins" className="space-y-4">
-      {/* Header */}
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-1 h-6 bg-primary shadow-[0_0_8px_hsl(188_100%_50%)]" />
+          <div className="w-1 h-6 bg-primary shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
           <h2 className="font-gaming text-lg neon-text tracking-wider">SKIN VAULT</h2>
           <span className="text-xs font-mono-game text-muted-foreground">({displaySkins.length} skins)</span>
         </div>
         <button
           onClick={() => setShowAdmin(!showAdmin)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-gaming border border-border rounded hover:border-primary hover:text-primary transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-gaming border border-border rounded-lg hover:border-primary hover:text-primary transition-all"
         >
-          <Plus size={12} />
-          ADMIN
+          <Plus size={12} /> ADMIN
         </button>
       </div>
 
-      {/* Admin Panel */}
       {showAdmin && (
-        <div className="neon-card rounded-lg p-4 border border-primary/20 space-y-3">
+        <div className="neon-card rounded-xl p-5 border border-primary/20 space-y-3">
           <div className="flex items-center justify-between">
             <span className="font-gaming text-sm text-primary">ADMIN PANEL</span>
             <button onClick={() => setShowAdmin(false)}><X size={14} className="text-muted-foreground hover:text-foreground" /></button>
@@ -140,38 +142,22 @@ const SkinsSection = () => {
               <div className="flex gap-2">
                 <input
                   type="password"
-                  className={`flex-1 bg-input border ${passError ? "border-destructive" : "border-border"} rounded px-3 py-1.5 text-sm font-mono-game focus:outline-none focus:border-primary transition-colors`}
+                  className={`flex-1 bg-input border ${passError ? "border-destructive" : "border-border"} rounded-lg px-3 py-2 text-sm font-mono-game focus:outline-none focus:border-primary`}
                   placeholder="Password..."
                   value={adminPass}
                   onChange={(e) => setAdminPass(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && tryAdminLogin()}
                 />
-                <button onClick={tryAdminLogin} className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-gaming rounded hover:bg-primary/90">
-                  LOGIN
-                </button>
+                <button onClick={tryAdminLogin} className="px-4 py-2 bg-primary text-primary-foreground text-xs font-gaming rounded-lg hover:bg-primary/90">LOGIN</button>
               </div>
               {passError && <p className="text-xs text-destructive font-mono-game">Wrong password.</p>}
             </div>
           ) : (
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  className="bg-input border border-border rounded px-3 py-1.5 text-sm font-mono-game focus:outline-none focus:border-primary transition-colors col-span-2"
-                  placeholder="Skin name *"
-                  value={form.name}
-                  onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))}
-                />
-                <input
-                  className="bg-input border border-border rounded px-3 py-1.5 text-sm font-mono-game focus:outline-none focus:border-primary transition-colors"
-                  placeholder="Description"
-                  value={form.description}
-                  onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))}
-                />
-                <select
-                  className="bg-input border border-border rounded px-3 py-1.5 text-sm font-mono-game focus:outline-none focus:border-primary transition-colors"
-                  value={form.category}
-                  onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}
-                >
+              <div className="grid grid-cols-2 gap-3">
+                <input className="bg-input border border-border rounded-lg px-3 py-2 text-sm font-mono-game focus:outline-none focus:border-primary col-span-2" placeholder="Skin name (leave blank to use filename)" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
+                <input className="bg-input border border-border rounded-lg px-3 py-2 text-sm font-mono-game focus:outline-none focus:border-primary" placeholder="Description" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} />
+                <select className="bg-input border border-border rounded-lg px-3 py-2 text-sm font-mono-game focus:outline-none focus:border-primary" value={form.category} onChange={(e) => setForm(f => ({ ...f, category: e.target.value }))}>
                   <option value="default">Default</option>
                   <option value="pvp">PvP</option>
                   <option value="aesthetic">Aesthetic</option>
@@ -179,58 +165,55 @@ const SkinsSection = () => {
                 </select>
               </div>
 
-              {/* File upload */}
-              <label className="flex items-center justify-center gap-2 border-2 border-dashed border-border rounded p-4 cursor-pointer hover:border-primary transition-colors group">
+              <label className="flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-xl p-5 cursor-pointer hover:border-primary transition-colors group">
                 <Upload size={16} className="text-muted-foreground group-hover:text-primary" />
                 <span className="text-xs font-mono-game text-muted-foreground group-hover:text-primary">
-                  {uploading ? "Uploading..." : form.image_url ? "✓ File uploaded" : "Upload skin PNG"}
+                  Click to select skin PNGs (multiple allowed)
                 </span>
-                <input type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleFileUpload} />
+                <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" multiple className="hidden" onChange={handleFilesSelected} />
               </label>
 
-              {form.image_url && (
-                <div className="flex items-center gap-2">
-                  <img src={form.image_url} alt="preview" className="w-8 h-8 object-cover rounded border border-border" style={{ imageRendering: "pixelated" }} />
-                  <span className="text-xs text-muted-foreground font-mono-game truncate">{form.image_url.split("/").pop()}</span>
+              {uploadQueue.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-gaming text-primary">{uploadQueue.length} file(s) queued</p>
+                  <div className="flex flex-wrap gap-2">
+                    {uploadQueue.map((item, idx) => (
+                      <div key={idx} className="relative">
+                        <img src={item.previewUrl} alt="preview" className="w-12 h-12 object-cover rounded-lg border border-border" style={{ imageRendering: "pixelated" }} />
+                        <button onClick={() => removeFromQueue(idx)} className="absolute -top-1 -right-1 w-4 h-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-[8px]">✕</button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
               <button
-                onClick={addSkin}
-                disabled={adding || !form.name || !form.image_url}
-                className="w-full py-2 font-gaming text-sm bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_10px_hsl(188_100%_50%/0.3)]"
+                onClick={addSkins}
+                disabled={adding || uploadQueue.length === 0}
+                className="w-full py-2.5 font-gaming text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-all"
               >
-                {adding ? "ADDING..." : "ADD SKIN"}
+                {adding ? "UPLOADING..." : `ADD ${uploadQueue.length || ""} SKIN${uploadQueue.length !== 1 ? "S" : ""}`}
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Skins Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
         {displaySkins.map((skin) => (
-          <div key={skin.id} className="group neon-card rounded-lg overflow-hidden border border-border hover:border-primary/50 transition-all hover:shadow-[0_0_15px_hsl(188_100%_50%/0.2)]">
-            {/* Skin preview */}
+          <div key={skin.id} className="group neon-card rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all hover:shadow-[0_0_15px_hsl(var(--primary)/0.15)]">
             <div className="aspect-square bg-secondary/30 flex items-center justify-center p-2 relative overflow-hidden">
               <div className="absolute inset-0 bg-grid opacity-30" />
               {skin.image_url ? (
-                <img
-                  src={skin.image_url}
-                  alt={skin.name}
-                  className="w-full h-full object-contain"
-                  style={{ imageRendering: "pixelated" }}
-                />
+                <img src={skin.image_url} alt={skin.name} className="w-full h-full object-contain relative" style={{ imageRendering: "pixelated" }} />
               ) : (
                 <Shirt size={32} className="text-muted-foreground" />
               )}
             </div>
-
-            {/* Info */}
-            <div className="p-2 space-y-1.5">
+            <div className="p-2.5 space-y-1.5">
               <p className="font-gaming text-xs truncate text-foreground">{skin.name}</p>
               {skin.category !== "default" && (
-                <span className="inline-block text-xs font-mono-game px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                <span className="inline-block text-[10px] font-mono-game px-1.5 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">
                   {skin.category}
                 </span>
               )}
@@ -238,10 +221,9 @@ const SkinsSection = () => {
                 <span className="text-xs text-muted-foreground font-mono-game">{skin.downloads} ↓</span>
                 <button
                   onClick={() => downloadSkin(skin)}
-                  className="flex items-center gap-1 px-2 py-1 text-xs font-gaming bg-primary/10 border border-primary/30 text-primary rounded hover:bg-primary hover:text-primary-foreground transition-all"
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-gaming bg-primary/10 border border-primary/30 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-all"
                 >
-                  <Download size={10} />
-                  GET
+                  <Download size={10} /> GET
                 </button>
               </div>
             </div>
