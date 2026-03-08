@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sun, Moon, Shield, LogOut, Menu, X } from "lucide-react";
+import { Sun, Moon, Shield, LogOut, Menu, X, User, LogIn } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 
 interface HeaderProps {
@@ -10,11 +10,15 @@ interface HeaderProps {
   onAdminLogout: () => void;
   lightMode: boolean;
   onToggleTheme: () => void;
+  user: any;
+  profile: any;
+  onSignOut: () => void;
 }
 
 const tabs = [
   { id: "home", label: "HOME" },
   { id: "games", label: "GAMES" },
+  { id: "chat", label: "CHAT" },
   { id: "ai", label: "AI CHAT" },
   { id: "websites", label: "WEBSITES" },
   { id: "tools", label: "TOOLS" },
@@ -23,7 +27,7 @@ const tabs = [
   { id: "activity", label: "LOG" },
 ];
 
-const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, lightMode, onToggleTheme }: HeaderProps) => {
+const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, lightMode, onToggleTheme, user, profile, onSignOut }: HeaderProps) => {
   const [showAdminInput, setShowAdminInput] = useState(false);
   const [adminPass, setAdminPass] = useState("");
   const [passError, setPassError] = useState(false);
@@ -69,6 +73,23 @@ const Header = ({ activeTab, onTabChange, isAdmin, onAdminLogin, onAdminLogout, 
         </nav>
 
         <div className="flex items-center gap-2 shrink-0">
+          {/* Auth */}
+          {user ? (
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-mono-game text-foreground hidden sm:inline">{profile?.username}</span>
+              <button onClick={onSignOut} className="p-1.5 text-muted-foreground hover:text-destructive" title="Sign out">
+                <LogOut size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => onTabChange("auth")}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg border border-border hover:border-primary transition-all text-[10px] font-gaming text-muted-foreground hover:text-foreground"
+            >
+              <LogIn size={12} /> SIGN IN
+            </button>
+          )}
+
           <button
             onClick={onToggleTheme}
             className="p-2 rounded-lg border border-border hover:border-primary transition-all"
