@@ -9,12 +9,16 @@ import SkinsSection from "@/components/SkinsSection";
 import RanksSection from "@/components/RanksSection";
 import ActivityLog from "@/components/ActivityLog";
 import AdBanner from "@/components/AdBanner";
+import AuthPage from "@/components/AuthPage";
+import ChatSection from "@/components/chat/ChatSection";
 import { useAdmin } from "@/hooks/useAdmin";
+import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [lightMode, setLightMode] = useState(() => localStorage.getItem("neocosmic_theme") === "light");
   const { isAdmin, login, logout } = useAdmin();
+  const { user, profile, signUp, signIn, signOut } = useAuth();
 
   useEffect(() => {
     if (lightMode) {
@@ -29,12 +33,16 @@ const Index = () => {
     switch (activeTab) {
       case "home": return <HomeTab onTabChange={setActiveTab} />;
       case "games": return <GamesSection isAdmin={isAdmin} />;
+      case "chat":
+        if (!user || !profile) return <AuthPage onSignUp={signUp} onSignIn={signIn} />;
+        return <ChatSection userId={user.id} username={profile.username} isAdmin={isAdmin} />;
       case "ai": return <AIChatSection />;
       case "websites": return <WebsitesSection isAdmin={isAdmin} />;
       case "tools": return <ToolsSection isAdmin={isAdmin} />;
       case "skins": return <SkinsSection />;
       case "ranks": return <RanksSection />;
       case "activity": return <ActivityLog />;
+      case "auth": return <AuthPage onSignUp={signUp} onSignIn={signIn} />;
       default: return <HomeTab onTabChange={setActiveTab} />;
     }
   };
@@ -49,6 +57,9 @@ const Index = () => {
         onAdminLogout={logout}
         lightMode={lightMode}
         onToggleTheme={() => setLightMode(!lightMode)}
+        user={user}
+        profile={profile}
+        onSignOut={signOut}
       />
 
       <div className="border-b border-border px-4 py-2 bg-card/30">
